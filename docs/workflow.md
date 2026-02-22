@@ -1,527 +1,455 @@
-# Workflow de Desenvolvimento - SGVI
+# Workflow de Desenvolvimento SGVI
 
-Este documento descreve o fluxo de desenvolvimento do sistema SGVI, incluindo:
+Este documento define o fluxo oficial de desenvolvimento do projeto SGVI.
 
-- GitHub Actions (CI)
-- Laravel Pint (Padronização de código)
-- PHPStan (Análise estática)
-- Testes automatizados
-- Hooks locais do Git
+Todos os desenvolvedores devem seguir este padrão.
 
-Este fluxo garante que o código esteja sempre:
+Este workflow garante:
 
-- Padronizado
-- Testado
-- Estável
-- Profissional
+- Código limpo
+- Padronização
+- Integração contínua estável
+- Histórico organizado
+- Qualidade profissional
 
 ---
 
-# 1. GitHub Actions (CI)
+# Branches Oficiais
+
+O projeto possui duas branches principais:
+
+## main
+
+Branch de produção.
+
+Regras:
+
+- Sempre estável
+- Nunca desenvolver diretamente
+- Recebe apenas merge da develop
+
+---
+
+## develop
+
+Branch de desenvolvimento.
+
+Regras:
+
+- Base de trabalho
+- Features são integradas aqui
+- Pode receber commits diários
+
+---
+
+# Fluxo Oficial
+
+Fluxo correto:
+
+```
+
+Nova Feature
+↓
+Branch Feature
+↓
+Commit
+↓
+Push
+↓
+Pull Request → develop
+↓
+CI aprovado
+↓
+Merge
+
+````
+
+---
+
+# Criar Nova Feature
+
+Sempre criar branch a partir da develop.
+
+```bash
+git checkout develop
+
+git pull
+
+git checkout -b feature/nome-da-feature
+````
+
+Exemplo:
+
+```
+feature/cadastro-pessoas
+feature/cadastro-instituicoes
+feature/vinculos
+```
+
+---
+
+# Padrão de Commits
+
+Commits devem seguir padrão profissional.
+
+Formato:
+
+```
+tipo: descrição
+```
+
+Tipos permitidos:
+
+```
+feat:
+fix:
+refactor:
+chore:
+test:
+docs:
+```
+
+---
+
+## Exemplos
+
+```
+feat: criar migration pessoas
+
+feat: implementar PessoaController
+
+fix: corrigir validação de email
+
+refactor: melhorar CreateVinculoAction
+
+docs: atualizar blueprint
+
+test: criar teste de vinculo
+```
+
+---
+
+# Regras de Commit
+
+Antes de commit:
+
+Obrigatório rodar:
+
+```
+./vendor/bin/pint
+
+./vendor/bin/phpstan analyse
+
+php artisan test
+```
+
+Nunca commitar com erro.
+
+---
+
+# Pre-commit Hook
+
+O projeto possui pre-commit configurado.
 
 Arquivo:
 
 ```
-
-.github/workflows/ci.yml
-
+.git/hooks/pre-commit
 ```
 
-O CI executa automaticamente quando ocorre:
-
-- Push na branch `main`
-- Push na branch `develop`
-- Pull Requests
-
-### O CI executa:
-
-## 1.1 Setup do Ambiente
-
-- Ubuntu Latest
-- PHP 8.4
-- Node 20
-- MySQL 8
-
-## 1.2 Instala Dependências
-
-### Composer
+Ele roda automaticamente:
 
 ```
-
-composer install
-
+./vendor/bin/pint
 ```
 
-### NPM
+Objetivo:
 
-```
-
-npm ci
-
-```
+* Garantir padrão de código
+* Evitar erro no CI
+* Evitar commits quebrados
 
 ---
 
-## 1.3 Configuração do Laravel
+# Como Criar o Pre-commit
 
-### Copia .env
+Entrar na pasta:
 
+```bash
+cd .git/hooks
 ```
 
-cp .env.example .env
+Criar arquivo:
 
+```bash
+touch pre-commit
 ```
 
-### Gera chave
+Conteúdo:
 
-```
+```bash
+#!/bin/sh
 
-php artisan key:generate
-
-```
-
----
-
-## 1.4 Banco de Dados
-
-Banco temporário MySQL:
-
-```
-
-Database: testing
-User: root
-Password: root
-
-```
-
-Executa:
-
-```
-
-php artisan migrate
-
-```
-
----
-
-## 1.5 Build do Frontend
-
-Executa:
-
-```
-
-npm run build
-
-```
-
----
-
-# 2. Padronização de Código
-
-Ferramenta:
-
-Laravel Pint
-
-Comando usado no CI:
-
-```
-
-./vendor/bin/pint --test
-
-```
-
-Se houver erro de estilo:
-
-```
-
-FAIL — style issues
-
-```
-
-O CI falha.
-
----
-
-## Como corrigir
-
-Rodar localmente:
-
-```
+echo "Rodando Laravel Pint..."
 
 ./vendor/bin/pint
 
+git add .
+
+echo "Pint finalizado."
+```
+
+Dar permissão:
+
+```bash
+chmod +x pre-commit
+```
+
+---
+
+# Pull Requests
+
+Sempre usar Pull Request.
+
+Nunca dar push direto na main.
+
+---
+
+## Regras do Pull Request
+
+Pull Request deve:
+
+* Ter título claro
+* Ter descrição
+* Passar no CI
+* Não ter erro Pint
+* Não ter erro PHPStan
+* Não quebrar testes
+
+---
+
+## Exemplo de PR
+
+Título:
+
+```
+feat: cadastro de instituições
+```
+
+Descrição:
+
+```
+Implementa CRUD completo de instituições.
+
+- Migration
+- Model
+- Controller
+- Requests
+- Rotas
+```
+
+---
+
+# Integração Contínua (CI)
+
+Arquivo:
+
+```
+.github/workflows/ci.yml
+```
+
+O CI roda automaticamente em:
+
+* Push
+* Pull Request
+
+---
+
+## O CI executa
+
+### Setup
+
+* Instala PHP
+* Instala Composer
+* Instala Node
+* Instala dependências
+
+---
+
+### Banco
+
+* Cria banco MySQL
+* Roda migrations
+
+---
+
+### Frontend
+
+* Instala NPM
+* Compila assets
+
+---
+
+### Qualidade
+
+Roda:
+
+```
+./vendor/bin/pint --test
+```
+
+Verifica padrão de código.
+
+---
+
+Roda:
+
+```
+./vendor/bin/phpstan analyse
+```
+
+Verifica erros de tipagem.
+
+---
+
+### Testes
+
+Roda:
+
+```
+php artisan test
+```
+
+---
+
+# Falha no CI
+
+Se o CI falhar:
+
+Nunca fazer merge.
+
+Corrigir localmente:
+
+```
+./vendor/bin/pint
+
+./vendor/bin/phpstan analyse
+
+php artisan test
 ```
 
 Depois:
 
 ```
-
-git add .
 git commit
+
 git push
-
 ```
 
 ---
 
-# 3. Análise Estática
+# Merge Strategy
 
-Ferramenta:
-
-PHPStan + Larastan
-
-Comando:
+Sempre usar:
 
 ```
-
-./vendor/bin/phpstan analyse
-
+Squash and Merge
 ```
 
-Objetivo:
+Motivo:
 
-- Detectar erros antes de rodar
-- Melhorar qualidade
-- Evitar bugs
+* Histórico limpo
+* Profissional
+* Fácil auditoria
 
 ---
 
-# 4. Testes Automatizados
+# Atualizar Branch
 
-Executado no CI:
+Sempre atualizar antes de trabalhar:
 
-```
-
-php artisan test
-
-```
-
-Os testes devem sempre passar antes do merge.
-
----
-
-# 5. Git Hook Automático (Pint)
-
-Arquivo:
-
-```
-
-.git/hooks/pre-commit
-
-```
-
-Esse hook roda automaticamente antes de cada commit.
-
-### Objetivo
-
-Garantir que o código sempre esteja no padrão Pint.
-
-### Conteúdo:
-
-```
-
-#!/bin/sh
-
-echo "Rodando Laravel Pint..."
-
-./vendor/bin/pint
-
-git add .
-
-echo "Pint finalizado."
-
-```
-
----
-
-# 6. Instalação do Hook (Obrigatório)
-
-Após clonar o projeto:
-
-Entrar na pasta hooks:
-
-```
-
-cd .git/hooks
-
-```
-
-Criar arquivo:
-
-```
-
-touch pre-commit
-
-```
-
-Abrir:
-
-```
-
-code pre-commit
-
-```
-
-Colar:
-
-```
-
-#!/bin/sh
-
-echo "Rodando Laravel Pint..."
-
-./vendor/bin/pint
-
-git add .
-
-echo "Pint finalizado."
-
-```
-
-Dar permissão:
-
-```
-
-chmod +x pre-commit
-
-```
-
----
-
-# 7. Fluxo Correto de Desenvolvimento
-
-Fluxo recomendado:
-
-## 1 - Criar feature branch
-
-```
-
+```bash
 git checkout develop
+
 git pull
-git checkout -b feature/nome
+```
 
+Depois:
+
+```bash
+git checkout feature/nome
+
+git merge develop
 ```
 
 ---
 
-## 2 - Desenvolver
+# Resolver Conflitos
 
-Exemplo:
+Após merge:
 
-```
-
-php artisan make:model
-php artisan make:migration
-
-```
-
----
-
-## 3 - Antes do commit
-
-Se hook estiver ativo:
-
-Nada necessário.
-
-Se não estiver:
-
-```
-
+```bash
 ./vendor/bin/pint
+```
 
+Depois:
+
+```bash
+git add .
+
+git commit
 ```
 
 ---
 
-## 4 - Commit
-
-```
-
-git commit -m "feat: descrição"
-
-```
-
----
-
-## 5 - Push
-
-```
-
-git push origin feature/nome
-
-```
-
----
-
-## 6 - Pull Request
-
-Abrir PR para:
-
-```
-
-develop
-
-```
-
-O CI será executado automaticamente.
-
----
-
-## 7 - Merge
-
-Só fazer merge se:
-
-✔ CI passou  
-✔ Testes passaram  
-✔ PHPStan passou  
-✔ Pint passou  
-
----
-
-# 8. Estrutura de Qualidade
-
-O projeto utiliza:
-
-- Laravel 11
-- MySQL 8
-- Blade
-- Tailwind
-- Alpine
-- Actions Pattern
-- Clean Code
-
----
-
-# 9. Ferramentas de Qualidade
-
-## Pint
-
-Padronização de código.
-
-```
-
-./vendor/bin/pint
-
-```
-
----
-
-## PHPStan
-
-Análise estática.
-
-```
-
-./vendor/bin/phpstan analyse
-
-```
-
----
-
-## Testes
-
-```
-
-php artisan test
-
-```
-
----
-
-# 10. Problemas Comuns
-
-## CI falhou no Pint
-
-Erro:
-
-```
-
-FAIL — style issues
-
-```
-
-Solução:
-
-```
-
-./vendor/bin/pint
-
-```
-
----
-
-## CI falhou no PHPStan
-
-Erro:
-
-```
-
-PHPStan detected errors
-
-```
-
-Solução:
-
-Corrigir código apontado.
-
----
-
-## CI falhou nos testes
-
-Erro:
-
-```
-
-Tests failed
-
-```
-
-Solução:
-
-Corrigir testes ou código.
-
----
-
-# 11. Boas Práticas
-
-Sempre:
-
-✔ Criar branch nova  
-✔ Rodar Pint  
-✔ Rodar testes  
-✔ Fazer Pull Request  
+# Nunca Fazer
 
 Nunca:
 
-❌ Commit direto na main  
-❌ Ignorar CI  
-❌ Ignorar Pint  
-❌ Ignorar PHPStan  
+* Commitar direto na main
+* Ignorar Pint
+* Ignorar PHPStan
+* Ignorar testes
+* Colocar regra de negócio em Controller
+* Mudar banco sem atualizar blueprint
 
 ---
 
-# 12. Resumo do Pipeline
+# Ordem Oficial de Desenvolvimento
 
-Ordem de execução:
+Seguir sempre:
 
-1 - Composer install  
-2 - .env  
-3 - Key generate  
-4 - Migrate  
-5 - NPM install  
-6 - Build assets  
-7 - Pint  
-8 - PHPStan  
-9 - Tests
+1 Ambiente
+
+2 Migrations
+
+3 Models
+
+4 Seeders
+
+5 Requests
+
+6 Controllers
+
+7 Actions
+
+8 Rotas
+
+9 Testes
+
+10 Blade
+
+Nunca inverter.
 
 ---
 
-# 13. Objetivo
+# Definição de Concluído
 
-Garantir que o SGVI seja um sistema:
+Uma tarefa só está pronta quando:
 
-- Estável
-- Profissional
-- Padronizado
-- Seguro
-- Escalável
+* Código limpo
+* Pint OK
+* PHPStan OK
+* Testes OK
+* CI OK
+* Blueprint respeitado
